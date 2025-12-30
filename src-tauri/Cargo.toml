@@ -38,6 +38,9 @@ regex = "1"
 # PTY management for terminal emulation
 portable-pty = "0.8"
 
+# Directory utilities
+dirs = "5"
+
 # Type-safe Tauri command bindings
 specta = { version = "=2.0.0-rc.22", features = ["derive", "serde_json"] }
 tauri-specta = { version = "=2.0.0-rc.21", features = ["typescript"] }

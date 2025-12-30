@@ -93,6 +93,7 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
+        .manage(commands::pty::PtyState::default())
         .setup(|app| {
             log::info!("Application starting up");
             log::debug!(

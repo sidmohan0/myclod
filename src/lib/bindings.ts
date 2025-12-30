@@ -142,6 +142,91 @@ async updateQuickPaneShortcut(shortcut: string | null) : Promise<Result<null, st
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Check all dependencies and return their status
+ */
+async checkDependencies() : Promise<DependencyStatus> {
+    return await TAURI_INVOKE("check_dependencies");
+},
+/**
+ * Install Claude Code via npm
+ * Emits 'install-progress' events with output lines
+ */
+async installClaudeCode() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("install_claude_code") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Spawn Claude Code in the specified directory
+ */
+async spawnClaude(cwd: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("spawn_claude", { cwd }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Send input to the Claude Code session
+ */
+async sendInput(input: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("send_input", { input }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Resize the terminal
+ */
+async resizeTerminal(rows: number, cols: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("resize_terminal", { rows, cols }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Kill the current PTY session
+ */
+async killSession() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("kill_session") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Check if there's an active PTY session
+ */
+async hasActiveSession() : Promise<boolean> {
+    return await TAURI_INVOKE("has_active_session");
+},
+/**
+ * Check authentication status by looking for Claude config files
+ */
+async checkAuthStatus() : Promise<AuthStatus> {
+    return await TAURI_INVOKE("check_auth_status");
+},
+/**
+ * Get the Claude config directory contents (for debugging)
+ */
+async getClaudeConfigInfo() : Promise<Result<string[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_claude_config_info") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -170,6 +255,34 @@ quick_pane_shortcut: string | null;
  * If None, uses system locale detection
  */
 language: string | null }
+/**
+ * Authentication status
+ */
+export type AuthStatus = { 
+/**
+ * Whether the user appears to be authenticated
+ */
+authenticated: boolean; 
+/**
+ * Path to the Claude config directory
+ */
+config_path: string | null }
+/**
+ * Status of required dependencies
+ */
+export type DependencyStatus = { 
+/**
+ * Node.js version if installed (e.g., "v20.10.0"), None if not found
+ */
+node: string | null; 
+/**
+ * Claude Code version if installed, None if not found
+ */
+claude: string | null; 
+/**
+ * Whether the user is authenticated with Anthropic
+ */
+authenticated: boolean }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
 /**
  * Error types for recovery operations (typed for frontend matching)
