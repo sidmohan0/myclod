@@ -9,6 +9,7 @@ import { cleanupOldFiles } from './lib/recovery'
 import { commands } from './lib/tauri-bindings'
 import './App.css'
 import { SetupFlow } from './components/setup'
+import { Terminal, FolderPicker } from './components/terminal'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { TitleBar } from './components/titlebar'
@@ -16,8 +17,11 @@ import { CommandPalette } from './components/command-palette'
 import { PreferencesDialog } from './components/preferences'
 import { Toaster } from './components/ui/sonner'
 
+type AppState = 'setup' | 'folder-picker' | 'terminal'
+
 function App() {
-  const [setupComplete, setSetupComplete] = useState(false)
+  const [appState, setAppState] = useState<AppState>('setup')
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
 
   // Initialize command system and cleanup on app startup
   useEffect(() => {
@@ -115,25 +119,53 @@ function App() {
   }, [])
 
   const handleSetupComplete = () => {
-    logger.info('Setup complete, ready to use')
-    setSetupComplete(true)
+    logger.info('Setup complete, showing folder picker')
+    setAppState('folder-picker')
+  }
+
+  const handleFolderSelected = (path: string) => {
+    logger.info('Folder selected, launching terminal', { path })
+    setSelectedFolder(path)
+    setAppState('terminal')
+  }
+
+  const handleSessionExit = () => {
+    logger.info('Session ended, returning to folder picker')
+    setSelectedFolder(null)
+    setAppState('folder-picker')
+  }
+
+  const renderContent = () => {
+    switch (appState) {
+      case 'setup':
+        return <SetupFlow onComplete={handleSetupComplete} />
+      case 'folder-picker':
+        return (
+          <div className="flex h-screen flex-col">
+            <TitleBar />
+            <main className="flex-1">
+              <FolderPicker onFolderSelected={handleFolderSelected} />
+            </main>
+          </div>
+        )
+      case 'terminal':
+        return (
+          <div className="flex h-screen flex-col">
+            <TitleBar />
+            <main className="flex-1 overflow-hidden">
+              {selectedFolder && (
+                <Terminal cwd={selectedFolder} onExit={handleSessionExit} />
+              )}
+            </main>
+          </div>
+        )
+    }
   }
 
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        {!setupComplete ? (
-          <SetupFlow onComplete={handleSetupComplete} />
-        ) : (
-          <div className="flex h-screen flex-col">
-            <TitleBar />
-            <main className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">
-                Terminal will be here (Phase 4)
-              </p>
-            </main>
-          </div>
-        )}
+        {renderContent()}
         <CommandPalette />
         <PreferencesDialog />
         <Toaster />

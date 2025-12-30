@@ -17,6 +17,11 @@
   "setup.auth.instructions": "Open a terminal and run:",
   "setup.auth.complete": "I've completed authentication",
 
+  "folder.title": "Choose a Project",
+  "folder.description": "Select a folder to start working with Claude",
+  "folder.selectTitle": "Select Project Folder",
+  "folder.selectButton": "Select Folder",
+
   "menu.about": "About {{appName}}",
   "menu.checkForUpdates": "Check for Updates...",
   "menu.preferences": "Preferences...",
