@@ -22,6 +22,11 @@
   "folder.selectTitle": "Select Project Folder",
   "folder.selectButton": "Select Folder",
 
+  "actionBar.accept": "Accept",
+  "actionBar.reject": "Reject",
+  "actionBar.acceptTooltip": "Accept the proposed changes (sends 'y')",
+  "actionBar.rejectTooltip": "Reject the proposed changes (sends 'n')",
+
   "menu.about": "About {{appName}}",
   "menu.checkForUpdates": "Check for Updates...",
   "menu.preferences": "Preferences...",

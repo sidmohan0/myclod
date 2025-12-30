@@ -9,7 +9,8 @@ import { cleanupOldFiles } from './lib/recovery'
 import { commands } from './lib/tauri-bindings'
 import './App.css'
 import { SetupFlow } from './components/setup'
-import { Terminal, FolderPicker } from './components/terminal'
+import { Terminal, FolderPicker, ActionBar } from './components/terminal'
+import { TooltipProvider } from './components/ui/tooltip'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { TitleBar } from './components/titlebar'
@@ -157,6 +158,12 @@ function App() {
                 <Terminal cwd={selectedFolder} onExit={handleSessionExit} />
               )}
             </main>
+            {selectedFolder && (
+              <ActionBar
+                currentFolder={selectedFolder}
+                onChangeFolder={handleSessionExit}
+              />
+            )}
           </div>
         )
     }
@@ -165,10 +172,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        {renderContent()}
-        <CommandPalette />
-        <PreferencesDialog />
-        <Toaster />
+        <TooltipProvider>
+          {renderContent()}
+          <CommandPalette />
+          <PreferencesDialog />
+          <Toaster />
+        </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
   )
