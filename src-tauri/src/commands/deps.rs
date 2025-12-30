@@ -16,10 +16,67 @@ pub struct DependencyStatus {
     pub authenticated: bool,
 }
 
+/// Get the user's full PATH by sourcing their shell profile.
+/// GUI apps on macOS don't inherit the shell's PATH, so we need to get it explicitly.
+pub fn get_shell_path() -> String {
+    // Try to get PATH from user's shell
+    if let Ok(output) = Command::new("/bin/zsh")
+        .args(["-l", "-c", "echo $PATH"])
+        .output()
+    {
+        if output.status.success() {
+            let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !path.is_empty() {
+                return path;
+            }
+        }
+    }
+
+    // Fallback: common macOS paths where Node might be installed
+    let common_paths = [
+        "/opt/homebrew/bin",           // Apple Silicon Homebrew
+        "/usr/local/bin",              // Intel Homebrew / manual installs
+        "/usr/bin",                    // System
+        "/bin",                        // System
+        "/usr/sbin",                   // System
+        "/sbin",                       // System
+        "/opt/homebrew/opt/node/bin",  // Homebrew node
+        "/usr/local/opt/node/bin",     // Intel Homebrew node
+    ];
+
+    // Also check for nvm
+    if let Some(home) = dirs::home_dir() {
+        let nvm_path = home.join(".nvm/versions/node");
+        if nvm_path.exists() {
+            // Find the latest node version in nvm
+            if let Ok(entries) = std::fs::read_dir(&nvm_path) {
+                let mut versions: Vec<_> = entries
+                    .filter_map(|e| e.ok())
+                    .filter(|e| e.path().is_dir())
+                    .collect();
+                versions.sort_by(|a, b| b.path().cmp(&a.path()));
+                if let Some(latest) = versions.first() {
+                    let bin_path = latest.path().join("bin");
+                    if bin_path.exists() {
+                        let mut paths = vec![bin_path.to_string_lossy().to_string()];
+                        paths.extend(common_paths.iter().map(|s| s.to_string()));
+                        return paths.join(":");
+                    }
+                }
+            }
+        }
+    }
+
+    common_paths.join(":")
+}
+
 /// Check if Node.js is installed and return its version
 fn check_node() -> Option<String> {
+    let path = get_shell_path();
+
     Command::new("node")
         .arg("--version")
+        .env("PATH", &path)
         .output()
         .ok()
         .filter(|o| o.status.success())
@@ -28,8 +85,11 @@ fn check_node() -> Option<String> {
 
 /// Check if Claude Code CLI is installed and return its version
 fn check_claude() -> Option<String> {
+    let path = get_shell_path();
+
     Command::new("claude")
         .arg("--version")
+        .env("PATH", &path)
         .output()
         .ok()
         .filter(|o| o.status.success())
@@ -83,8 +143,11 @@ pub fn check_dependencies() -> DependencyStatus {
 pub async fn install_claude_code(window: Window) -> Result<(), String> {
     log::info!("Installing Claude Code via npm...");
 
+    let path = get_shell_path();
+
     let output = Command::new("npm")
         .args(["install", "-g", "@anthropic-ai/claude-code"])
+        .env("PATH", &path)
         .output()
         .map_err(|e| format!("Failed to run npm: {e}"))?;
 

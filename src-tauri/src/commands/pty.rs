@@ -3,6 +3,7 @@
 //! This module handles spawning Claude Code in a PTY, reading output,
 //! writing input, and managing the terminal session lifecycle.
 
+use super::deps::get_shell_path;
 use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
@@ -61,9 +62,12 @@ pub async fn spawn_claude(
         })
         .map_err(|e| format!("Failed to open PTY: {e}"))?;
 
-    // Build command
+    // Build command with proper PATH for GUI app
+    let path = get_shell_path();
+
     let mut cmd = CommandBuilder::new("claude");
     cmd.cwd(&cwd);
+    cmd.env("PATH", &path);
     cmd.env("TERM", "xterm-256color");
     cmd.env("COLORTERM", "truecolor");
 
