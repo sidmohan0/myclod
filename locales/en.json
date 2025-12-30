@@ -1,5 +1,21 @@
 {
-  "app.name": "Tauri Template",
+  "app.name": "myclod",
+
+  "setup.checking": "Checking dependencies...",
+  "setup.node.title": "Node.js Required",
+  "setup.node.description": "Claude Code needs Node.js to run",
+  "setup.node.download": "Download from nodejs.org (Recommended)",
+  "setup.node.copied": "Command copied to clipboard",
+  "setup.node.recheck": "I've installed Node.js — Check again",
+  "setup.claude.title": "Install Claude Code",
+  "setup.claude.description": "One-click install via npm",
+  "setup.claude.install": "Install Claude Code",
+  "setup.claude.installing": "Installing...",
+  "setup.claude.waiting": "Starting installation...",
+  "setup.auth.title": "Sign in to Anthropic",
+  "setup.auth.description": "Authenticate with your Anthropic account",
+  "setup.auth.instructions": "Open a terminal and run:",
+  "setup.auth.complete": "I've completed authentication",
 
   "menu.about": "About {{appName}}",
   "menu.checkForUpdates": "Check for Updates...",

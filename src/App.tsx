@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { initializeCommandSystem } from './lib/commands'
@@ -8,14 +8,20 @@ import { logger } from './lib/logger'
 import { cleanupOldFiles } from './lib/recovery'
 import { commands } from './lib/tauri-bindings'
 import './App.css'
-import { MainWindow } from './components/layout/MainWindow'
+import { SetupFlow } from './components/setup'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { TitleBar } from './components/titlebar'
+import { CommandPalette } from './components/command-palette'
+import { PreferencesDialog } from './components/preferences'
+import { Toaster } from './components/ui/sonner'
 
 function App() {
+  const [setupComplete, setSetupComplete] = useState(false)
+
   // Initialize command system and cleanup on app startup
   useEffect(() => {
-    logger.info('🚀 Frontend application starting up')
+    logger.info('🚀 myclod starting up')
     initializeCommandSystem()
     logger.debug('Command system initialized')
 
@@ -108,10 +114,29 @@ function App() {
     return () => clearTimeout(updateTimer)
   }, [])
 
+  const handleSetupComplete = () => {
+    logger.info('Setup complete, ready to use')
+    setSetupComplete(true)
+  }
+
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <MainWindow />
+        {!setupComplete ? (
+          <SetupFlow onComplete={handleSetupComplete} />
+        ) : (
+          <div className="flex h-screen flex-col">
+            <TitleBar />
+            <main className="flex-1 flex items-center justify-center">
+              <p className="text-muted-foreground">
+                Terminal will be here (Phase 4)
+              </p>
+            </main>
+          </div>
+        )}
+        <CommandPalette />
+        <PreferencesDialog />
+        <Toaster />
       </ThemeProvider>
     </ErrorBoundary>
   )
